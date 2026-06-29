@@ -546,6 +546,42 @@ pub async fn latest_by_timestamp(test: &mut Test) -> Result<(), BoxError> {
     Ok(())
 }
 
+#[driver_test(id(ID), requires(sql))]
+pub async fn oldest_by_timestamp(test: &mut Test) -> Result<(), BoxError> {
+    use jiff::Timestamp;
+
+    #[derive(Debug, toasty::Model)]
+    #[allow(dead_code)]
+    struct Item {
+        #[key]
+        #[auto]
+        id: ID,
+
+        #[column(type = text)]
+        val: Timestamp,
+    }
+
+    let mut db = test.setup_db(models!(Item)).await;
+
+    toasty::create!(Item::[
+        { val: Timestamp::from_second(1609459200)? }, // 2021-01-01
+        { val: Timestamp::from_second(946684800)? },  // 2000-01-01
+        { val: Timestamp::from_second(1735689600)? }, // 2025-01-01
+    ])
+    .exec(&mut db)
+    .await?;
+
+    let oldest: Vec<_> = Item::all()
+        .oldest_by(Item::fields().val())
+        .exec(&mut db)
+        .await?;
+
+    assert_eq!(oldest.len(), 3);
+    assert!(oldest[0].val < oldest[1].val);
+    assert!(oldest[1].val < oldest[2].val);
+    Ok(())
+}
+
 #[driver_test(id(ID))]
 pub async fn filter_by_timestamp(test: &mut Test) -> Result<(), BoxError> {
     use jiff::Timestamp;

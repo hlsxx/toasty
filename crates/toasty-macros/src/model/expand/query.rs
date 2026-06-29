@@ -140,6 +140,15 @@ impl Expand<'_> {
                     }
                 }
 
+                #vis fn oldest_by<#include_ty>(
+                    self,
+                    field: #toasty::stmt::Path<#model_ident, #include_ty>,
+                ) -> Self {
+                    Self {
+                        stmt: self.stmt.oldest_by(field),
+                    }
+                }
+
                 #vis fn limit(self, n: usize) -> Self {
                     Self {
                         stmt: self.stmt.limit(n),

@@ -611,6 +611,28 @@ impl<M: Model> Query<List<M>> {
     pub fn latest_by<U>(self, field: Path<M, U>) -> Self {
         self.order_by(field.desc())
     }
+
+    /// Sort this query so the oldest records on `field` appear first.
+    ///
+    /// Convenience for [`order_by`](Self::order_by) with [`Path::asc`].
+    /// `field` must be a path rooted at this query's model `M`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[derive(Debug, toasty::Model)]
+    /// # struct User {
+    /// #     #[key]
+    /// #     id: i64,
+    /// #     name: String,
+    /// # }
+    /// use toasty::stmt::{List, Query};
+    ///
+    /// let q = Query::<List<User>>::all().oldest_by(User::fields().id());
+    /// ```
+    pub fn oldest_by<U>(self, field: Path<M, U>) -> Self {
+        self.order_by(field.asc())
+    }
 }
 
 impl<T> IntoStatement for Query<T> {

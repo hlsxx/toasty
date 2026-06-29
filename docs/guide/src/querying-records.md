@@ -305,6 +305,33 @@ Use it when the natural ordering for a model is "newest first" and the
 sort field doubles as a recency proxy — auto-incrementing keys, UUIDv7
 keys, or a `created_at` timestamp.
 
+## Sorting by oldest first
+
+`.oldest_by(field)` sorts the query in ascending order of the named
+field — shorthand for `order_by(field.asc())`:
+
+```rust
+# use toasty::Model;
+# #[derive(Debug, toasty::Model)]
+# struct Post {
+#     #[key]
+#     #[auto]
+#     id: u64,
+#     title: String,
+# }
+# async fn __example(mut db: toasty::Db) -> toasty::Result<()> {
+let oldest = Post::all()
+    .oldest_by(Post::fields().id())
+    .limit(10)
+    .exec(&mut db)
+    .await?;
+# Ok(())
+# }
+```
+
+The opposite of [`latest_by`](#sorting-by-most-recent) — use it for
+chronological ("oldest first") ordering.
+
 ## What gets generated
 
 For a model with `#[key]` on `id` and `#[unique]` on `email`, Toasty generates:
